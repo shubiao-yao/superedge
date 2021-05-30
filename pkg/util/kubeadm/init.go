@@ -162,9 +162,6 @@ func NewInitCMD(out io.Writer, edgeConfig *cmd.EdgeadmConfig) *cobra.Command {
 		Args: cobra.NoArgs,
 	}
 
-	// One-click install of flags for cluster
-	initClusterFlags(cmd.Flags(), edgeConfig)
-
 	// adds flags to the init command
 	// init command local flags could be eventually inherited by the sub-commands automatically generated for phases
 	AddInitConfigFlags(cmd.Flags(), initOptions.externalInitCfg)
@@ -173,6 +170,9 @@ func NewInitCMD(out io.Writer, edgeConfig *cmd.EdgeadmConfig) *cobra.Command {
 	initOptions.bto.AddTokenFlag(cmd.Flags())
 	initOptions.bto.AddTTLFlag(cmd.Flags())
 	options.AddImageMetaFlags(cmd.Flags(), &initOptions.externalClusterCfg.ImageRepository)
+
+	// One-click install of flags for cluster
+	initClusterFlags(cmd.Flags(), edgeConfig, initOptions.externalClusterCfg.KubernetesVersion)
 
 	// defines additional flag that are not used by the init command but that could be eventually used
 	// by the sub-commands automatically generated for phases
@@ -210,7 +210,11 @@ func NewInitCMD(out io.Writer, edgeConfig *cmd.EdgeadmConfig) *cobra.Command {
 
 	// Initialize the node before one-click install kubernetes
 	initRunner.AppendPhase(steps.NewInitNodePhase())
-	initRunner.AppendPhase(steps.NewContainerPhase())
+	if edgeConfig.RuntimeType == "docker" {
+		initRunner.AppendPhase(steps.NewDockerPhase())
+	} else {
+		initRunner.AppendPhase(steps.NewContainerDPhase())
+	}
 
 	// initialize the workflow runner with the list of phases
 	initRunner.AppendPhase(phases.NewPreflightPhase())
@@ -245,7 +249,7 @@ func NewInitCMD(out io.Writer, edgeConfig *cmd.EdgeadmConfig) *cobra.Command {
 	return cmd
 }
 
-func initClusterFlags(flagSet *flag.FlagSet, edgeConfig *cmd.EdgeadmConfig) {
+func initClusterFlags(flagSet *flag.FlagSet, edgeConfig *cmd.EdgeadmConfig, k8sVersion string) {
 	flagSet.StringVar(
 		&edgeConfig.InstallPkgPath, constant.InstallPkgPath,
 		constant.InstallPkgNetworkLocation, "Install static package path of kubernetes cluster.",
@@ -255,6 +259,18 @@ func initClusterFlags(flagSet *flag.FlagSet, edgeConfig *cmd.EdgeadmConfig) {
 		&edgeConfig.ManifestsDir, constant.ManifestsDir, "", "Manifests document of edge kubernetes cluster.",
 	)
 
+	defaultValue := "docker"
+	isOver, err := kubeclient.IsOverK8sVersion(k8sVersion, "1.20.0")
+	if err != nil {
+		klog.Errorf("Check K8s k8sVersion failed, k8sVersion: %s, error: %v", k8sVersion, err)
+	} else {
+		if isOver {
+			defaultValue = "containerd"
+		}
+	}
+	flagSet.StringVar(
+		&edgeConfig.RuntimeType, constant.RuntimeType, defaultValue, "Container Runtime Type of edge kubernetes cluster.",
+	)
 }
 
 func edgeadmConfigUpdate(initOptions *initOptions, edgeadmConfig *cmd.EdgeadmConfig) error {

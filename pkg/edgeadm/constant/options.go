@@ -4,6 +4,7 @@ const (
 	ISEnableEdge   = "enable-edge"
 	InstallPkgPath = "install-pkg-path"
 	ManifestsDir   = "manifests-dir"
+	RuntimeType    = "container-runtime-type"
 )
 
 const (

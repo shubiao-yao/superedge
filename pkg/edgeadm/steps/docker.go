@@ -19,7 +19,7 @@ package steps
 import (
 	"k8s.io/klog/v2"
 	"k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases/workflow"
-	cmdutil "k8s.io/kubernetes/cmd/kubeadm/app/cmd/util"
+	cmdUtil "k8s.io/kubernetes/cmd/kubeadm/app/cmd/util"
 
 	"github.com/superedge/superedge/pkg/edgeadm/common"
 	"github.com/superedge/superedge/pkg/edgeadm/constant"
@@ -27,36 +27,25 @@ import (
 )
 
 var (
-	dockerExample = cmdutil.Examples(`
+	dockerExample = cmdUtil.Examples(`
 		# Install docker container runtime.
 		  kubeadm init phase container`)
 )
 
-//install container runtime (docker | containerd | CRI-O)
-func NewContainerPhase() workflow.Phase {
+//install docker container runtime
+func NewDockerPhase() workflow.Phase {
 	return workflow.Phase{
 		Name:         "container",
 		Short:        "Install docker container runtime",
 		Long:         "Install docker container runtime",
 		Example:      dockerExample,
-		Run:          installContainer,
+		Run:          installDocker,
 		InheritFlags: []string{},
 	}
 }
 
-func installContainer(c workflow.RunData) error {
-	err := installDocker()
-	if err != nil {
-		return err
-	}
-	klog.Info("Installed docker container runtime successfully")
-
-	return nil
-}
-
-func installDocker() error {
+func installDocker(c workflow.RunData) error {
 	klog.V(4).Infof("Start install docker container runtime")
-	//unzip Docker Package
 	if err := common.UnzipPackage(EdgeadmConf.WorkerPath+constant.ZipContainerPath, EdgeadmConf.WorkerPath+constant.UnZipContainerDstPath); err != nil {
 		klog.Errorf("Unzip Docker container runtime Package: %s, error: %v", EdgeadmConf.WorkerPath+constant.UnZipContainerDstPath, err)
 		return err

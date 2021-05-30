@@ -18,10 +18,9 @@ package main
 
 import (
 	"flag"
-	"os"
-
 	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
+	"os"
 
 	"github.com/superedge/superedge/cmd/edgeadm/app"
 	cliflag "k8s.io/component-base/cli/flag"

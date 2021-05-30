@@ -21,9 +21,10 @@ const (
 	CNIPluginsDir = InstallDir + "cni/"
 	CNIPluginsPKG = CNIPluginsDir + "cni-plugins-*.tgz"
 
-	UnZipContainerDstPath = InstallDir + "container/"
-	ZipContainerPath      = UnZipContainerDstPath + "docker-*.tgz"
-	DockerInstallShell    = UnZipContainerDstPath + "docker/install"
+	UnZipContainerDstPath  = InstallDir + "container/"
+	ZipContainerPath       = UnZipContainerDstPath + "container-*.tgz"
+	DockerInstallShell     = UnZipContainerDstPath + "container/docker-install.sh"
+	ContainerDInstallShell = UnZipContainerDstPath + "container/containerd-install.sh"
 )
 
 const (
