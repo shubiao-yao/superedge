@@ -70,6 +70,7 @@ func NewEdgeadmCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 	cmds.AddCommand(kubeadm.NewResetCMD(os.Stdin, os.Stdout, &edgeadmConf))
 	cmds.AddCommand(addon.NewAddonCMD())
 	cmds.AddCommand(addon.NewDetachCMD())
+	cmds.AddCommand(addon.NewInstallContainerRuntime())
 
 	return cmds
 }
